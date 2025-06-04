@@ -1,0 +1,177 @@
+﻿@model ICS_Tickets_Tools.Models.Tickets
+
+<script src="~/Scripts/jquery.validate.min.js"></script>
+<script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> Edit Tickets</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-image: url('../../image/aaa.jpg');
+            background-size: cover;
+            background-repeat: no-repeat;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+
+        .card {
+            border-radius: 1rem;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+
+        .card-body {
+            padding: 2rem;
+        }
+
+        .form-control {
+            border-radius: 0.5rem;
+        }
+
+        .btn-login {
+            border-radius: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card mt-5">
+                    <div class="card-body">
+                        <h3 class="text-center mb-4">Edit Tickets</h3>
+                        @using (Html.BeginForm("Edit", "Tickets", FormMethod.Post, new { enctype = "multipart/form-data", id = "formId" }))
+                        {
+                            @Html.HiddenFor(m => m.Id)
+                            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+                            <div class="form-group">
+                                <label for="TicketNo">Ticket No</label>
+                                @Html.TextBoxFor(m => m.TicketNo, new { @class = "form-control", @readonly = "readonly" })
+                            </div>
+                                           
+                            <div class="form-group">
+                                <label for="CategoryId">Category</label>
+                                <select asp-for="CategoryId" asp-items="ViewBag.Category_Tbl" class="form-control" id="CategoryDropdown">
+                                    <option value="">-- Select Category --</option>
+                                </select>
+                                <div class="text-danger">@Html.ValidationMessageFor(m => m.CategoryId)</div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="SubCategoryId">SubCategory</label>
+                                <select asp-for="SubCategoryId" class="form-control" id="subcategoryDropdown">
+                                    <option value="">-- Select SubCategory --</option>
+                                </select>
+                                <div class="text-danger">@Html.ValidationMessageFor(m => m.SubCategoryId)</div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="TicketDescription">Ticket Description</label>
+                                @Html.TextAreaFor(m => m.TicketDescription, new { @class = "form-control", placeholder = "Enter your Ticket Description"})
+                                <div class="text-danger">@Html.ValidationMessageFor(m => m.TicketDescription)</div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="Files">Upload New Files (Image/PDF)</label>
+                                <input type="file" name="Files" multiple accept=".jpg,.jpeg,.png,.pdf" class="form-control" />
+                                <span class="text-danger">@Html.ValidationMessage("FileUpload")</span>
+                            </div>
+
+                            @Html.HiddenFor(model => model.Image)
+
+                            @if (!string.IsNullOrEmpty(Model.Image))
+                            {
+                                <div class="form-group">
+                                    <label>Current Files:</label>
+                                    <div class="row">
+                                        @{
+                                            var images = Model.Image.Split(',');
+                                            foreach (var img in images)
+                                            {
+                                                if (img.EndsWith(".pdf"))
+                                                {
+                                                    <div class="col-md-3 mb-2">
+                                                        <a href="~/TicketIssueImage/@img" target="_blank">View PDF</a>
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    <div class="col-md-3 mb-2">
+                                                        <img src="~/TicketIssueImage/@img" class="img-thumbnail" style="height:150px; width:auto;" />
+                                                    </div>
+                                                }
+                                            }
+                                        }
+                                    </div>
+                                </div>
+                            }
+
+                            <input type="hidden" asp-for="Image" /> 
+                                                  
+                            @Html.HiddenFor(m => m.Status, new { @Value = "Open" })
+                                               
+                            <button type="submit" class="btn btn-primary mt-3">Update</button>
+                            <a href="@Url.Action("TicketsIndex", "Tickets")" class="btn btn-danger mt-3">Cancel</a>
+
+                        }
+                        <div id="errorMessage" class="text-danger mt-3"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @section Scripts {
+        <partial name="_ValidationScriptsPartial" />
+    }
+
+    <script>
+        $(document).ready(function () {
+            function loadSubcategories(categoryId, selectedSubCategoryId) {
+                if (categoryId) {
+                    $.ajax({
+                        url: '/Tickets/GetRolesByDepartment',
+                        type: 'GET',
+                        data: { categoryId: categoryId },
+                        success: function (subcategories) {
+                            var subcategoryDropdown = $("#subcategoryDropdown");
+                            subcategoryDropdown.empty();
+                            subcategoryDropdown.append('<option value="">-- Select SubCategory --</option>');
+
+                            $.each(subcategories, function (index, subcategory) {
+                                var selected = (subcategory.SubCategoryId == selectedSubCategoryId) ? 'selected' : '';
+                                subcategoryDropdown.append('<option value="' + subcategory.SubCategoryId + '" ' + selected + '>' + subcategory.SubCategoryName + '</option>');
+                            });
+                        }
+                    });
+                } else {
+                    $("#subcategoryDropdown").empty().append('<option value="">-- Select SubCategory --</option>');
+                }
+            }
+
+            var selectedCategoryId = $("#CategoryDropdown").val();
+            var selectedSubCategoryId = '@Model.SubCategoryId'; // Pass server side selected SubCategoryId
+
+            // Load subcategories on page load (for Edit mode)
+            if (selectedCategoryId) {
+                loadSubcategories(selectedCategoryId, selectedSubCategoryId);
+            }
+
+            // On category change, reload subcategories but don't preselect
+            $("#CategoryDropdown").change(function () {
+                var newCategoryId = $(this).val();
+                loadSubcategories(newCategoryId, null);
+            });
+        });
+    </script>
+</body>
+</html>

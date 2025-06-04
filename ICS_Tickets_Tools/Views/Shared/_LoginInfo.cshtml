@@ -1,0 +1,46 @@
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<ApplicationUser> _signInManager
+@inject UserManager<ApplicationUser> UserManager
+
+@if (_signInManager.IsSignedIn(User))
+{
+
+    @*<div class="btn-group">*@
+    <div class="dropdown">
+       @*  <button class="btn btn-mini">Hello @User.Identity.Name</button> *@
+       
+        <button class="btn btn-mini dropdown-toggle" data-toggle="dropdown">
+            @(User.Identity.Name)
+            <span class="caret"></span>
+        </button>
+
+        @*<ul class="dropdown-menu" style="min-width: 9rem;">*@
+        <ul class="dropdown-menu dropdown-menu-right">
+            <!-- dropdown menu links -->
+            <li>
+                <form asp-action="Logout" asp-controller="Account" method="post" style="display:inline;">
+                    <button type="submit" class="dropdown-item">Logout</button>
+                </form>
+                <a class="dropdown-item" asp-action="ChangePassword" asp-controller="Account">Change password</a>
+                @if (User.IsInRole("Admin"))
+                {
+                    <a class="dropdown-item" asp-controller="Account" asp-action="Register">Add New User</a>
+                    <a class="dropdown-item" asp-controller="Account" asp-action="ResetPassword">Reset Password</a>
+                }
+
+            </li>
+        </ul>
+    </div>
+
+}
+else
+{
+
+    <li class="nav-item">
+        <a class="btn btn-outline-primary" asp-controller="Account" asp-action="Login" asp-route-returnUrl="@Context.Request.Path">Login</a>
+        @*<a class="btn btn-primary" asp-controller="Account" asp-action="Signup">Register</a>*@
+    </li>
+
+}
+
+

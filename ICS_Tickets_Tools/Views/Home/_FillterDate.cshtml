@@ -1,0 +1,89 @@
+﻿
+@{
+    var ActionForm = this.ViewContext.RouteData.Values["action"].ToString();
+}
+
+
+
+@if (ActionForm == "TicketsFillterDate")
+{
+    <div class="modal fade" id="addReport">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header text-center">
+                    <h4 class="modal-title  w-100" id="AddReqLabel">Ticket`s Data Details</h4>
+                    <button type="button" class="close" data-bs-dismiss="modal">
+                        <span>X</span>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <form asp-action="AllDateWiseTickets" asp-controller="Tickets" id="NewForm">
+                                <style>
+                                    input.form-control {
+                                        block-size: 30px;
+                                        font-size: 14px;
+                                    }
+
+                                    textarea.form-control {
+                                        font-size: 14px;
+                                    }
+
+                                    label.control-label {
+                                        font-size: 12px;
+                                    }
+
+                                    span.text-danger {
+                                        font-size: 10px;
+                                    }
+
+                                    select.form-control {
+                                        block-size: 30px;
+                                        font-size: 12px;
+                                    }
+                                </style>
+                                <div class="row g-3">
+                                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                                    <div class="form-group col-md-6">
+                                        <label class="control-label" for="fromdate">From  Date<span style="color:red">*</span></label>
+                                        <input type="date" name="fromdate" class="form-control" required title="from date is required" />
+
+                                    </div>
+                                    <div class="form-group col-md-6">
+                                        <label class="control-label">To Date<span style="color:red">*</span></label>
+                                        <input type="date" name="todate" class="form-control" required title="To date is required" />
+
+                                    </div>
+
+                                    @* @if (User.IsInRole("Admin") || User.IsInRole("ApplicationEngineer"))
+                                    {
+                                        <div class="form-group col-md-12">
+                                            <label class="control-label" for="engineername"> Engineer Name<span style="color:red">*</span></label>
+                                            <select class="form-control" name="engineername" asp-items="(await _clientRepo.EngCode(true)).Select(x=>new SelectListItem() { Text=x.EngineerCode,Value=x.Id.ToString()})">
+                                                <option value="">All</option>
+                                            </select>
+                                            <span asp-validation-for="engineername"></span>
+
+                                        </div>
+                                    } *@
+
+
+                                </div>
+                                <br />
+                                <div class="modal-footer">
+                                    <input type="submit" class="btn btn-primary" />
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+}

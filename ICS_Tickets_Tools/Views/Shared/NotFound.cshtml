@@ -1,0 +1,11 @@
+﻿@{
+    ViewData["Title"] = "404 - Page Not Found";
+    Layout = null;
+}
+
+<div style="text-align:center; padding: 40px;">
+    <img src="~/company logo/error_404.png" alt="404 Not Found"  />
+    <h1 style="font-size: 48px; color: red;">404</h1>
+    <h2>Oops! The page you are looking for does not exist.</h2>
+    <a href="@Url.Action("Index", "Home")" class="btn btn-primary mt-3">Back to Home</a>
+</div>

@@ -1,0 +1,258 @@
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+@{
+    var currentPath = Context.Request.Path.ToString().ToLower();
+    var currentQuery = Context.Request.Query["Status"].ToString().ToLower();
+}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] ICS Tickets </title>
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" />
+
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" />
+    <link rel="shortcut icon" href="~/company logo/ics industrial automation logo hd.jpg" />
+    <!-- Bootstrap JS -->
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    @section Scripts {
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    }
+
+</head>
+
+<style>
+    /* Navbar base styling */
+    .navbar-custom {
+        background-color: #343a40;
+        padding: 10px 20px;
+    }
+
+        .navbar-custom .nav-link,
+        .navbar-custom .navbar-brand {
+            color: white !important;
+            text-decoration: none;
+            position: relative;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            padding: 10px 15px;
+        }
+
+        /* Hover transform effect */
+        .navbar-custom .nav-link:hover,
+        .navbar-custom .navbar-brand:hover {
+            transform: translateY(-3px);
+                color: #07c6ff7a !important; /* Yellow text on hover */
+        }
+
+        /* Hover bottom strip animation */
+        .navbar-custom .nav-link::before,
+        .navbar-custom .navbar-brand::before {
+            content: "";
+            position: absolute;
+            z-index: -1;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background-color: #A6A6A6;
+            transform: scaleY(0);
+            transform-origin: bottom;
+            transition: transform 0.3s ease;
+        }
+
+        .navbar-custom .nav-link:hover::before,
+        .navbar-custom .navbar-brand:hover::before {
+            transform: scaleY(1);
+        }
+
+    .navbar-toggler {
+        background-color: #07c6ff7a;
+        border: none;
+    }
+
+    .navbar-toggler-icon {
+        color: white;
+    }
+
+    .navbar-brand.nav-link {
+        color: white;
+        transition: background-color 0.3s ease;
+        padding: 10px 15px;
+    }
+
+        .navbar-brand.nav-link:hover {
+            background-color: #777;
+            color: #07c6ff7a;
+        }
+
+    .active-tab {
+        background-color: #07c6ff7a !important;
+        color: black !important;
+        border-radius: 5px;
+    }
+
+</style>
+
+
+<body>
+
+  
+
+    <div class="wrapper">
+        <div class="main">
+            <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+ 
+                  
+
+                    <!-- Toggle button (important for mobile view) -->
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent"
+                            aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+
+
+                <a id="sidebar" class="sidebar-toggle js-sidebar-toggle" onclick="Sopen()">
+                    <i class="hamburger align-self-center"></i>
+                </a>
+
+                <div class="navbar-collapse collapse" id="navbarContent">
+              @*       <div class="navbar-collapse collapse" id="navbarContent"> *@
+                    <ul class="navbar-nav flex-grow-1">
+
+                        <li class="nav-item">
+                            <a class="navbar-brand">
+                              <img src="~/company logo/ics industrial automation logo hd.jpg" height="40" width="100" />
+                            </a>                           
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="navbar-brand nav-link @(currentPath == Url.Action("Index", "Home")?.ToLower() ? "active-tab" : "")"
+                               asp-area="" asp-controller="Home" asp-action="Index" style=" margin-right: -15px; margin-left: 32px;">
+                                Home
+                            </a>
+                        </li>
+                    
+                        <li class="nav-item">                          
+                            @if (User.IsInRole("Admin") || User.IsInRole("User"))
+                            {
+                                <a class="navbar-brand nav-link @(currentPath == Url.Action("Create", "Tickets")?.ToLower() ? "active-tab" : "")"
+                                   asp-area="" asp-controller="Tickets" asp-action="Create" style="margin-left: 30px;">
+                                    AddTickets
+                                </a>
+                            }                         
+                        </li>
+
+                        <li class ="nav-item">
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <a class="navbar-brand nav-link @(currentPath == Url.Action("TicketsIndex", "Tickets")?.ToLower() ? "active-tab" : "")"
+                                   asp-area="" asp-controller="Tickets" asp-action="TicketsIndex">
+                                    AssignTicketsList
+                                </a>
+                            }
+                        </li>
+
+
+
+                        <li class="nav-item">
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <a class="navbar-brand nav-link @(currentPath == Url.Action("AssignTicketsList", "AssignTickets")?.ToLower() && currentQuery == "open" ? "active-tab" : "")"
+                                   href="@Url.Action("AssignTicketsList", "AssignTickets", new { Status = "Open" })">
+                                    Open/HoldTicketsList
+                                </a>
+                            }
+                            else if (User.IsInRole("User"))
+                            {
+                                <a class="navbar-brand nav-link @(currentPath == Url.Action("TicketsIndex", "Tickets")?.ToLower() ? "active-tab" : "")"
+                                   asp-area="" asp-controller="Tickets" asp-action="TicketsIndex">
+                                    TicketsList
+                                </a>
+                            }
+                            else
+                            {
+                                <a class="navbar-brand nav-link  @(currentPath == Url.Action("AssignTicketsList", "AssignTickets")?.ToLower() && currentQuery == "open" ? "active-tab" : "")"
+                                   style="margin-left: 28px;"
+                                   href="@Url.Action("AssignTicketsList", "AssignTickets", new { Status = "Open" })">
+                                   TicketsList
+                                </a>
+                            }
+                        </li>
+
+                        <li class="nav-item">
+                             
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <a class="navbar-brand nav-link @(currentPath == Url.Action("AssignTicketsList", "AssignTickets")?.ToLower() && currentQuery == "closed" ? "active-tab" : "")"
+                                   href="@Url.Action("AssignTicketsList", "AssignTickets", new { Status = "Closed" })">
+                                    ClosedTickets
+                                </a>
+                            }
+                            else
+                            {
+                                <a class="navbar-brand nav-link @(currentPath == Url.Action("AssignTicketsList", "AssignTickets")?.ToLower() && currentQuery == "closed" ? "active-tab" : "")"
+                                   href="@Url.Action("AssignTicketsList", "AssignTickets", new { Status = "Closed" })">
+                                     ClosedList
+                                </a>
+                            }
+                        </li>
+                    </ul>                  
+                    <ul class="navbar-nav ml-auto">
+                        <partial name="_LoginInfo" />
+                    </ul>
+
+                </div>
+              
+            </nav>
+       
+            <main class="content">
+                <div class="container-fluid p-0">
+                    @RenderBody()
+                </div>
+            </main>
+
+
+        </div>
+    </div>
+    @* <footer class="border-top footer text-muted">
+    <div class="container">
+    &copy; 2025 - ICS_Tickets_Tools - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    </div>
+    </footer> *@
+
+
+    <!-- jQuery (required before DataTables) -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+@* 
+    <script src="~/microsoft/signalr/dist/browser/signalr.js"></script>
+
+    <script src="~/js/site.js"></script> *@
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+    <!-- Custom Site JS -->
+     <script src="~/js/site.js" asp-append-version="true"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+
+    @*  <script src="~/lib/jquery/dist/jquery.min.js"></script> *@
+
+   
+
+</body>
+</html>

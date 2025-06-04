@@ -1,0 +1,185 @@
+﻿@model ICS_Tickets_Tools.Models.Tickets
+
+<script src="~/Scripts/jquery.validate.min.js"></script>
+<script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Page</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <style>
+        /* Custom styles for login form and background */
+        body {
+            background-image: url('path/to/your/image.jpg');
+            background-image: url('../../image/aaa.jpg');
+            background-size: cover;
+            background-repeat: no-repeat;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+
+        .card {
+            border-radius: 1rem;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+
+        .card-body {
+            padding: 2rem;
+        }
+
+        .form-control {
+            border-radius: 0.5rem;
+        }
+
+        .btn-login {
+            border-radius: 0.5rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card mt-5">
+                    <div class="card-body">
+                        <h3 class="text-center mb-4">Create Tickets</h3>
+                        @using (Html.BeginForm("Create", "Tickets", FormMethod.Post, new { enctype = "multipart/form-data", id = "formId" }))
+                        {
+                            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+                            <div class="form-group">
+                             
+                                <div class="form-group">
+                                    <label for="financialYear">Financial Year</label>
+                                    <select id="financialYear" asp-for="FinancialYear" class="form-control">
+                                        <option value="">--Select--</option>
+                                    </select>                                  
+                                    <div class="text-danger">@Html.ValidationMessageFor(m => m.FinancialYear)</div>
+                                </div>
+                             
+                                <div class="form-group">
+                                    <label for="CategoryId">Category</label>
+                                    <select asp-for="CategoryId" asp-items="ViewBag.Category_Tbl" class="form-control" id="CategoryDropdown">
+                                        <option value="">-- Select Category --</option>
+                                    </select>
+                                    <div class="text-danger">@Html.ValidationMessageFor(m => m.CategoryId)</div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="SubCategoryId">SubCategory</label>
+                                    <select asp-for="SubCategoryId" class="form-control" id="subcategoryDropdown">
+                                        <option value="">-- Select SubCategory --</option>
+                                    </select>
+                                    <div class="text-danger">@Html.ValidationMessageFor(m => m.SubCategoryId)</div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="TicketDescription">Description</label>
+                                    @Html.TextAreaFor(m => m.TicketDescription, new
+                                        {
+                                            @class = "form-control",
+                                            placeholder = "Enter your Ticket Description",
+                                            id = "TicketDescription"
+                                        })
+                                    <small class="text-muted">Maximum 15 words allowed.</small>
+                                    <div class="text-danger">@Html.ValidationMessageFor(m => m.TicketDescription)</div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="Files">Upload Files (Image / PDF - Max 1MB each)</label>
+                                    <input type="file" name="Files" multiple accept=".jpg,.jpeg,.png,.pdf" class="form-control" />
+                                    <span class="text-danger">@Html.ValidationMessage("FileUpload")</span>
+                                </div>
+                                         
+                                @Html.HiddenFor(m => m.Status, new { @Value = "Open" })
+
+                                <button type="submit" class="btn btn-primary mt-3">Save</button>
+                                <a href="@Url.Action("TicketsIndex", "Tickets")" class="btn btn-danger mt-3">Cancel</a>
+
+                            </div>
+                        }
+                        <div id="errorMessage" class="text-danger mt-3"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @section Scripts {
+        <partial name="_ValidationScriptsPartial" />
+    }
+
+    <script>
+        $(document).ready(function () {
+            $("#CategoryDropdown").change(function () {
+                var categoryId = $(this).val();
+                if (categoryId) {
+                    $.ajax({
+                        url: '/Tickets/GetRolesByDepartment',  // Make sure correct controller name
+                        type: 'GET',
+                        data: { categoryId: categoryId },
+                        success: function (subcategories) {
+                            var subcategoryDropdown = $("#subcategoryDropdown");
+                            subcategoryDropdown.empty();
+                            subcategoryDropdown.append('<option value="">-- Select SubCategory --</option>');
+                            $.each(subcategories, function (index, subcategory) {
+                                subcategoryDropdown.append('<option value="' + subcategory.SubCategoryId + '">' + subcategory.SubCategoryName + '</option>');
+                            });
+                        }
+                    });
+                } else {
+                    $("#subcategoryDropdown").empty().append('<option value="">-- Select SubCategory --</option>');
+                }
+            });
+        });
+    </script>
+
+    <script>
+        document.getElementById('TicketDescription').addEventListener('input', function () {
+            let words = this.value.trim().split(/\s+/);
+            if (words.length > 15) {
+                this.value = words.slice(0, 15).join(" ");
+                alert("Only 15 words are allowed.");
+            }
+        });
+    </script>
+    
+    <script>
+
+        document.addEventListener("DOMContentLoaded", function () {
+            debugger;
+            var currentDate = new Date();
+            var currentYear = currentDate.getFullYear();
+            var currentMonth = currentDate.getMonth() + 1; // Adding 1 because getMonth() returns zero-based month index
+            var dropdown = document.getElementById("financialYear");
+            var backYear;
+
+            if (currentMonth >= 4) {
+                // If current month is April or later, set backYear to current year
+                backYear = currentYear;
+            } else {
+                // If current month is before April, set backYear to previous year
+                backYear = currentYear - 1;
+            }
+
+            var next = backYear + 1;
+            var year = backYear + "-" + next.toString().slice(-2);
+            var option = new Option(year, year);
+            dropdown.add(option);
+        });
+
+    </script>
+
+</body>
+
+</html>

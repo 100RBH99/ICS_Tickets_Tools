@@ -1,0 +1,306 @@
+﻿@using System.IO
+@model List<ICS_Tickets_Tools.Models.Tickets>
+
+@{
+    // ViewData["Title"] = "AssignTicketsList";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<head>
+    <link href="~/lib/datatables/css/jquery.dataTables.css" rel="stylesheet" />
+    <link href="https://cdn.datatables.net/responsive/2.4.1/css/responsive.dataTables.min.css" rel="stylesheet" />
+</head>
+
+<style>
+    table.dataTable {
+        font-size: 13px;
+        text-align: center;
+    }
+
+    .table img {
+        border-radius: 5px;
+        margin: 3px;
+    }
+
+    td {
+        word-wrap: break-word;
+        white-space: pre-wrap;
+    }
+</style>
+
+@if (ViewBag.StatusType == "Open")
+{
+    <h2 style="text-align: center;">Show Assign List</h2>
+
+}
+else
+{
+    <h2 style="text-align: center;">Show Closed List</h2>
+}
+
+<div class="table-responsive">
+    <table class="table table-bordered display nowrap" id="MyDataTable" style="width:195%;">
+        <thead class="thead-dark">
+            <tr style ="text-align-last: center;">
+
+                @if (ViewBag.StatusType == "Open")
+                {
+                    <th>Ticket No</th>
+                    <th>User Name</th>
+                    <th>Ticket Description</th>
+                    <th>Category Name</th>
+                    <th>SubCategory Name</th>
+                    <th>Image</th>
+                    @if (User.IsInRole("Admin") || User.IsInRole("ITEngineer"))
+                    {
+                        <th>Priority</th>
+                        <th>Assgin By</th>
+                    }
+                    <th>Assgin Name</th>
+                    <th>Created Date</th>
+                    <th>Updated Date</th>
+                    <th>Assigned Date</th>
+                    <th>Assigned Remark</th>
+                    @if (Model != null && Model.Any(m => m.Status == "Hold"))
+                    {
+                        <th>Hold Date</th>
+                        <th>Hold Remark</th>
+                    }
+                    else
+                    {
+                        <th>Hold Date</th>
+                        <th>Hold Remark</th>
+                    }
+                    <th>Status</th>
+
+                    @if (User.IsInRole("Admin") || User.IsInRole("ITEngineer"))
+                    {
+                        <th>Actions</th>
+                    }
+                }
+                else
+                {
+                    <th>Ticket No</th>
+                    <th>User Name</th>
+                    <th>Ticket Description</th>
+                    <th>Category Name</th>
+                    <th>SubCategory Name</th>
+                    <th>Image</th>
+                    <th>Created Date</th>
+                    <th>Updated Date</th>
+                    @if (User.IsInRole("Admin") || User.IsInRole("ITEngineer"))
+                    {
+                        <th>Priority</th>
+                        <th>Assgin By</th>
+                    }
+                    <th>Assgin Name</th>
+                    <th>Assigned Date</th>
+                    <th>Assigned Remark</th>
+                    <th>Hold Date</th>
+                    <th>Hold Remark</th>
+                    <th>Closed Date</th>
+                    <th>Closed By</th>
+                    <th>Closed Remark</th>
+                    <th>Status</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in Model)
+            {
+                <tr>
+                    @if (ViewBag.StatusType == "Open")
+                    {
+                        <td>@user.TicketNo</td>
+                        <td>@user.EmpName</td>                       
+                        <td style="white-space: normal; word-wrap: break-word; max-width: 300px;">
+                            @Html.Raw(user.TicketDescription?.Replace(Environment.NewLine, "<br />"))
+                        </td>
+                        <td>@user.CategoryName</td>
+                        <td>@user.SubCategoryName</td>
+
+                        @if (string.IsNullOrEmpty(user.Image))
+                        {
+                            <td>No Uploaded Image</td>
+                        }
+                        else
+                        {
+                            <td>
+                                @foreach (var file in user.Image?.Split(',') ?? Array.Empty<string>())
+                                {
+                                    if (!string.IsNullOrEmpty(file))
+                                    {
+                                        string fileUrl = Url.Content("~/TicketIssueImage/" + file);
+                                        string fileExtension = System.IO.Path.GetExtension(file).ToLower();
+
+                                        if (fileExtension == ".jpg" || fileExtension == ".jpeg" || fileExtension == ".png")
+                                        {
+                                            <a href="@fileUrl" target="_blank">
+                                                <img src="@fileUrl" alt="Image" width="60" height="60" />
+                                            </a>
+                                        }
+                                        else if (fileExtension == ".pdf")
+                                        {
+                                            <a href="@fileUrl" target="_blank" class="btn btn-sm btn-outline-dark">PDF</a>
+                                        }
+                                    }
+                                }
+                            </td>
+                        }
+
+                        @if (User.IsInRole("Admin") || User.IsInRole("ITEngineer"))
+                        {
+                            <td>@user.Priority</td>
+                            <td>@user.AssignedBy</td>
+                        }
+                        <td>@user.AssignedTo</td>
+                        <td>@user.CreatedDate</td>
+                        <td>@(user.UpdatedDate.HasValue ? user.UpdatedDate.Value.ToString("yyyy-MM-dd HH:mm:ss") : "No UpdateDate")</td>
+                        <td>@user.AssignedDate</td>
+                        <td style="white-space: normal; word-wrap: break-word; max-width: 300px;">
+                            @Html.Raw(user.AssignedRemark?.Replace(Environment.NewLine, "<br />"))
+                        </td>
+                        @if (user.Status == "Hold")
+                        {
+                            <td>@user.HoldDate</td>                          
+                            <td style="white-space: normal; word-wrap: break-word; max-width: 300px;">
+                                @Html.Raw(user.HoldRemark?.Replace(Environment.NewLine, "<br />"))
+                            </td>
+                        }
+                        else
+                        {
+                            <td>No HoldDate </td>
+                            <td>No HoldRemark </td>
+                        }
+
+                        <td class="btn-group-sm" style="color: @(user.Status == "Closed" ? "red" : user.Status == "Hold" ? "deeppink" : "green")"> @user.Status  </td>
+
+                        @if (User.IsInRole("Admin") || User.IsInRole("ITEngineer"))
+                        {
+                            <td>
+                                <a asp-action="AssignTicket" asp-route-id="@user.Id" class="btn btn-danger">Closed Ticket</a>
+                            </td>
+                        }
+                    }
+                    else
+                    {
+                        <td>@user.TicketNo</td>
+                        <td>@user.EmpName</td>                       
+                        <td style="white-space: normal; word-wrap: break-word; max-width: 300px;">
+                            @Html.Raw(user.TicketDescription?.Replace(Environment.NewLine, "<br />"))
+                        </td>
+                        <td>@user.CategoryName</td>
+                        <td>@user.SubCategoryName</td>
+
+                        @if (string.IsNullOrEmpty(user.Image))
+                        {
+                            <td>No Uploaded Image</td>
+                        }
+                        else
+                        {
+                            <td>
+                                @foreach (var file in user.Image?.Split(',') ?? Array.Empty<string>())
+                                {
+                                    if (!string.IsNullOrEmpty(file))
+                                    {
+                                        string fileUrl = Url.Content("~/TicketIssueImage/" + file);
+                                        string fileExtension = System.IO.Path.GetExtension(file).ToLower();
+
+                                        if (fileExtension == ".jpg" || fileExtension == ".jpeg" || fileExtension == ".png")
+                                        {
+                                            <a href="@fileUrl" target="_blank">
+                                                <img src="@fileUrl" alt="Image" width="60" height="60" />
+                                            </a>
+                                        }
+                                        else if (fileExtension == ".pdf")
+                                        {
+                                            <a href="@fileUrl" target="_blank" class="btn btn-sm btn-outline-dark">PDF</a>
+                                        }
+                                    }
+                                }
+                            </td>
+                        }
+
+                        <td>@user.CreatedDate</td>
+                        <td>@(user.UpdatedDate.HasValue ? user.UpdatedDate.Value.ToString("yyyy-MM-dd HH:mm:ss") : "No UpdateDate")</td>
+
+                        @if (User.IsInRole("Admin") || User.IsInRole("ITEngineer"))
+                        {
+                            <td>@user.Priority</td>
+                            <td>@user.AssignedBy</td>
+                        }
+                        <td>@user.AssignedTo</td>
+                        <td>@user.AssignedDate</td>
+                        <td style="white-space: normal; word-wrap: break-word; max-width: 300px;">
+                            @Html.Raw(user.AssignedRemark?.Replace(Environment.NewLine, "<br />"))
+                        </td>
+                        @if (!user.HoldDate.HasValue || string.IsNullOrEmpty(user.HoldRemark))
+                        {
+                            <td>No HoldDate </td>
+                            <td>No HoldRemark </td>
+                        }
+                        else
+                        {
+                            <td>@user.HoldDate</td>
+                            <td style="white-space: normal; word-wrap: break-word; max-width: 300px;">
+                                @Html.Raw(user.HoldRemark?.Replace(Environment.NewLine, "<br />"))
+                            </td>
+
+                        }
+
+                        <td>@user.CloseingDate</td>
+                        <td>@user.ClosedBy</td>
+                        <td style="white-space: normal; word-wrap: break-word; max-width: 300px;">
+                            @Html.Raw(user.ClosedRemark?.Replace(Environment.NewLine, "<br />"))
+                        </td>
+                        <td class="btn-group-sm" style="color: @(user.Status == "Closed" ? "red" : "green")">
+                            @user.Status
+                        </td>
+                    }
+
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- Scripts -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.4.1/js/dataTables.responsive.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        $('#MyDataTable').DataTable({
+            responsive: true,
+            paging: true,
+            scrollX: true,
+            lengthMenu: [10, 25, 50, 100],
+            pageLength: 10,
+            searching: true,
+            ordering: false,
+            info: true,
+            stateSave: true,
+            language: {
+                search: "Search:",
+                lengthMenu: "Show _MENU_ entries",
+                info: "Showing _START_ to _END_ of _TOTAL_ entries",
+                paginate: {
+                    previous: "Previous",
+                    next: "Next"
+                }
+            }
+        });
+
+        var errorMessage = '@TempData["ErrorMessage"]';
+        var successMessage = '@TempData["SuccessMessage"]';
+        if (errorMessage) {
+            alert(errorMessage);
+        }
+        if (successMessage) {
+            alert(successMessage);
+        }
+    });
+</script>
+
+

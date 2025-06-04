@@ -1,0 +1,353 @@
+﻿@using System.IO
+@model List<ICS_Tickets_Tools.Models.Tickets>
+
+@{
+    // ViewData["Title"] = "TicketsIndex";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<head>
+    <link href="~/lib/datatables/css/jquery.dataTables.css" rel="stylesheet" />
+    <link href="https://cdn.datatables.net/responsive/2.4.1/css/responsive.dataTables.min.css" rel="stylesheet" />
+</head>
+
+<style>
+    table.dataTable {
+        font-size: 13px;
+        text-align: center;
+    }
+
+    .table img {
+        border-radius: 5px;
+        margin: 3px;
+    }
+
+    td {
+        word-wrap: break-word;
+        white-space: pre-wrap;
+    }
+</style>
+
+@{
+    var ActionName = this.ViewContext.RouteData.Values["action"].ToString();
+}
+
+<div id="ErQuotationDetails" style="width:1000px;"></div>
+
+
+@if (ActionName == "TicketsIndex")
+{
+    <div class="container-fluid p-0">
+        <div class="">
+            <div class="card-body">
+
+                <div class="row g-4">
+                    <div class="col-md-2">
+                        @using (Html.BeginForm("Create", "Tickets", FormMethod.Get))
+                        {
+                            <input type="submit" class="btn btn-primary" value="Add Tickets" />
+                        }
+                    </div>
+                    <div class="col-md-2">
+                      
+@*                      <a asp-action="EnquiryExport" asp-controller="Export" class="btn btn-primary" asp-route-financialYear="@ViewBag.finacialyear">Enquiry Export</a>
+ *@
+                        <a asp-controller="Export" asp-action="ExportToExcel" class="btn btn-success mb-2">
+                            Export to Excel
+                        </a>
+
+                    </div>
+
+                    <div class="col-md-2">
+                        <button type="button" class="btn btn-warning" data-toggle="ajax-ersales" data-target="#SalesdetailsEr" style='margin-left:8%' data-url="@Url.Action("TicketsFillterDate", "Home", new { department = ViewBag.department, assettype = ViewBag.assettype })">
+                            Details By Date
+                        </button>
+                    </div>
+
+                    <div class="col-md-4 ">
+                        @using (Html.BeginForm("TicketsIndex", "Tickets"))
+                        {
+                            <div class="row">
+
+                                <div class="form-group col-md-7">
+                                    <label>Yearly Enquiry:</label>
+                                    <select type="text" name="year" id="financialYear" autocomplete="off"></select>
+                                </div>
+                                <div class="form-group col-md-5">
+                                    <input type="submit" value="Submit" class=" btn-outline-primary" />
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <hr />
+    <div class="row col-md-12">
+        <h3 class="col-md-8">Tickets List</h3>
+        <h3 class="text-center col-md-4">Financial Year => @ViewBag.finacialyear</h3>
+
+    </div>
+}
+
+@if (ActionName == "AllDateWiseTickets")
+{
+    <div class="row col-md-12">
+        <div class="col-md-4">
+
+@*             <a class="btn btn-primary" asp-action="EnquiryDataFilter" asp-controller="Export" asp-route-frdate="@ViewBag.fromdate" asp-route-tdate="@ViewBag.todate" asp-route-engineername="@ViewBag.engineername">Export Records</a>
+ *@
+            <a asp-controller="Export" asp-action="ExportToExcel" class="btn btn-success mb-2">
+                Export to Excel
+            </a>
+        </div>
+        @* <div class="col-md-4">
+
+            <button type="button" class="btn btn-secondary" data-toggle="ajax-salespo" data-target="#salesPo" style='margin-left:8%' data-url="@Url.Action("ErQuoForm345", "Home", new { department = ViewBag.department, assettype = ViewBag.assettype })">
+                PO Record By Date
+            </button>
+        </div> *@
+        <div class="col-md-4">
+
+            <button type="button" class="btn btn-warning" data-toggle="ajax-ersales" data-target="#SalesdetailsEr" style='margin-left:8%' data-url="@Url.Action("TicketsFillterDate", "Home", new { department = ViewBag.department, assettype = ViewBag.assettype })">
+                Details By Date
+            </button>
+        </div>
+    </div>
+    <hr />
+    <div class="row col-md-12">
+        <h3 class="col-md-8">Tickets List</h3>
+        <h3 class="col-md-4">From @ViewBag.fromdate.ToString("dd-MM-yyyy") To @ViewBag.todate.ToString("dd-MM-yyyy")</h3>
+    </div>
+}
+
+
+
+@* <h2 class="text-center mb-4">Show Tickets List</h2> *@
+
+@* @if (User.IsInRole("Admin"))
+ {
+     <a asp-action="Create" class="btn btn-primary">Add Tickets</a>
+ } *@
+
+@* <a asp-controller="Export" asp-action="ExportToExcel" class="btn btn-success mb-2">
+    Export to Excel
+</a> *@
+
+<div class="table-responsive">
+    <table class="table table-bordered display nowrap" id="MyDataTable" style="width:100%;">
+        <thead class="thead-dark">
+            <tr style ="text-align-last: center;">
+                <th>Ticket No</th>
+                <th>User Name</th>
+                <th>Description</th>
+                <th>Category</th>
+                <th>SubCategory</th>
+                <th>Image</th>
+                @if (User.IsInRole("User"))
+                {
+                    <th>Assgin Name</th>
+                }
+                <th>Created Date</th>
+                <th>Updated Date</th>
+                @if (User.IsInRole("User"))
+                {
+                    @if (Model != null && Model.Any(m => m.Status == "Hold"))
+                    {
+                        <th>Hold Date</th>
+                        <th>Hold Remark</th>
+                    }
+                    else
+                    {
+                        <th>Hold Date</th>
+                        <th>Hold Remark</th>
+                    }
+                }
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in Model)
+            {
+                <tr>
+                    @*<td>@user.Id</td> *@
+                    <td>@user.TicketNo</td>
+                    <td>@user.EmpName</td>                   
+                    <td style="white-space: normal; word-wrap: break-word; max-width: 300px;">
+                        @Html.Raw(user.TicketDescription?.Replace(Environment.NewLine, "<br />"))
+                    </td>
+                    <td>@user.CategoryName</td>
+                    <td>@user.SubCategoryName</td>
+
+                    @if (string.IsNullOrEmpty(user.Image))
+                    {
+                        <td>No Uploaded Image</td>
+                    }
+                    else
+                    {
+                        <td>
+                            @foreach (var file in user.Image?.Split(',') ?? Array.Empty<string>())
+                            {
+                                if (!string.IsNullOrEmpty(file))
+                                {
+                                    string fileUrl = Url.Content("~/TicketIssueImage/" + file);
+                                    string fileExtension = System.IO.Path.GetExtension(file).ToLower();
+
+                                    if (fileExtension == ".jpg" || fileExtension == ".jpeg" || fileExtension == ".png")
+                                    {
+                                        <a href="@fileUrl" target="_blank">
+                                            <img src="@fileUrl" alt="Image" width="60" height="60" />
+                                        </a>
+                                    }
+                                    else if (fileExtension == ".pdf")
+                                    {
+                                        <a href="@fileUrl" target="_blank" class="btn btn-sm btn-outline-dark">PDF</a>
+                                    }
+                                }
+                            }
+                        </td>
+                    }
+
+                    @if (User.IsInRole("User"))
+                    {
+                        @if (string.IsNullOrEmpty(user.AssignedTo))
+                        {
+                            <td>No Assigned Name</td>
+                        }
+                        else
+                        {
+                            <td>@user.AssignedTo</td>
+                        }
+
+                    }
+                    <td>@user.CreatedDate.ToString("dd/MM/yyyy")</td>
+
+                    <td>@(user.UpdatedDate.HasValue ? user.UpdatedDate.Value.ToString("yyyy-MM-dd HH:mm:ss") : "No UpdateDate")</td>
+
+                    @if (User.IsInRole("User"))
+                    {
+                        @if (user.Status == "Hold")
+                        {
+                            <td>@user.HoldDate?.ToString("dd/MM/yyyy")</td>
+                            <td>@user.HoldRemark</td>
+                        }
+                        else
+                        {
+                            <td>No HoldDate </td>
+                            <td>No HoldRemark </td>
+                        }
+                    }
+                    <td class="btn-group-sm" style="color: @(user.Status == "Closed" ? "red" : user.Status == "Hold" ? "deeppink" : "green")">
+                        @user.Status
+                    </td>
+
+                    <td>
+                        @if (User.IsInRole("User"))
+                        {
+                            @if (string.IsNullOrEmpty(user.AssignedTo))
+                            {
+                                <a asp-action="Edit" asp-route-id="@user.Id" class="btn btn-primary">Edit</a>
+                            }
+                            else
+                            {
+                                <span class="btn btn-primay" style="color: darkorange;">Assigned</span>
+                            }
+                        }
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <a asp-action="AssignTicket" asp-route-id="@user.Id" class="btn btn-warning">Assign Ticket</a>
+                        }
+                    </td>
+
+                </tr>
+            }
+        </tbody>
+    </table>
+
+
+</div>
+
+
+
+<!-- Scripts -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.4.1/js/dataTables.responsive.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        $('#MyDataTable').DataTable({
+            responsive: true,
+            paging: true,
+            scrollX: true,
+            lengthMenu: [10, 25, 50, 100],
+            pageLength: 10,
+            searching: true,
+            ordering: false,
+            info: true,
+            stateSave: true,
+            language: {
+                search: "Search:",
+                lengthMenu: "Show _MENU_ entries",
+                info: "Showing _START_ to _END_ of _TOTAL_ entries",
+                paginate: {
+                    previous: "Previous",
+                    next: "Next"
+                }
+            }
+        });
+
+        var errorMessage = '@TempData["ErrorMessage"]';
+        var successMessage = '@TempData["SuccessMessage"]';
+        if (errorMessage) {
+            alert(errorMessage);
+        }
+        if (successMessage) {
+            alert(successMessage);
+        }
+    });
+</script>
+
+<script>
+    $(document).ready(function () {
+        $(function () {
+            var ErSalesDetails = $('#ErQuotationDetails');
+
+            $('button[data-toggle="ajax-ersales" ]').click(function (event) {
+
+                var url = $(this).data('url');
+
+                $.get(url).done(function (data) {
+                    ErSalesDetails.html(data);
+                    ErSalesDetails.find('.modal').modal('show');
+                })
+                $(".modal-backdrop").remove();
+
+            })
+
+        })
+    });
+</script>
+<script>
+    $(document).ready(function () {
+        var currentYear = new Date().getFullYear();
+        var amountofyear = 30;
+        for (var i = 0; i < 20; i++) {
+            var next = currentYear + 1;
+            var year = currentYear + '-' + next.toString().slice(-2);
+            var option = new Option(year, year);
+            $('#financialYear').append(option);
+            currentYear--;
+        }
+
+        // Check if ViewBag.finacialyear is not null and select it in the dropdown
+        var selectedYear = '@ViewBag.finacialyear';
+        if (selectedYear) {
+            $('#financialYear').val(selectedYear);
+        }
+    })
+</script>
+
+

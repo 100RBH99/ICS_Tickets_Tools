@@ -1,0 +1,161 @@
+﻿@model ICS_Tickets_Tools.ViewModels.AssignTicketViewModel
+
+<script src="~/Scripts/jquery.validate.min.js"></script>
+<script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Closed Tickets</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-image: url('../../image/aaa.jpg');
+            background-size: cover;
+            background-repeat: no-repeat;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+
+        .card {
+            border-radius: 1rem;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+
+        .card-body {
+            padding: 2rem;
+        }
+
+        .form-control {
+            border-radius: 0.5rem;
+        }
+
+        .btn-login {
+            border-radius: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card mt-5">
+                    <div class="card-body">
+                        <h3 class="text-center mb-4">Closed Tickets</h3>
+                        @using (Html.BeginForm("AssignTicket", "AssignTickets", FormMethod.Post, new { enctype = "multipart/form-data", id = "formId" }))
+                        {
+                            @Html.HiddenFor(m => m.Id)
+                            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+                            <div class="form-group">
+                                <label for="TicketNo">Ticket No</label>
+                                @Html.TextBoxFor(m => m.TicketNo, new { @class = "form-control", placeholder = "Enter Ticket No", @readonly = "readonly" })
+                            </div>
+
+                            <div class="form-group">
+                                <label for="Status">Status</label>
+                                @Html.DropDownListFor(m => m.Status, new SelectList(new[] { "Closed", "Hold" }), "-- Select Status --", new { @class = "form-control", @id = "statusDropdown",})
+                                <div class="text-danger">@Html.ValidationMessageFor(m => m.Status)</div>
+                            </div>
+
+                            <div class="form-group" id="holdRemarkGroup" style="display: none;">
+                                <label for="HoldRemark">Hold Remark</label>
+                                @Html.TextAreaFor(m => m.HoldRemark, new { @class = "form-control", placeholder = "Enter hold remarks here", rows = 3, id = "TicketDescription" })
+                                <small class="text-muted">Maximum 15 words allowed.</small>
+                                <div class="text-danger">@Html.ValidationMessageFor(m => m.HoldRemark)</div>
+                            </div>
+
+                            <div class="form-group" id="closedRemarkGroup" style="display: none;">
+                                <label for="ClosedRemark">Closed Remark</label>
+                                @Html.TextAreaFor(m => m.ClosedRemark, new { @class = "form-control", placeholder = "Enter closed remarks here", rows = 3, id = "ClosedRemark" })
+                                <small class="text-muted">Maximum 15 words allowed.</small>
+                                <div class="text-danger">@Html.ValidationMessageFor(m => m.ClosedRemark)</div>
+                            </div>
+
+                            <div class="form-group" id="HoldDateGroup" style="display: none;">
+                                <label for="HoldDate">Hold Date</label>
+                                @Html.TextBoxFor(m => m.HoldDate, new { @class = "form-control", @type = "datetime-local", value = Model.HoldDate?.ToString("yyyy-MM-dd"), @id = "HoldDate", @placeholder = "Select your Hold Date" })
+                                <div class="text-danger">@Html.ValidationMessageFor(m => m.HoldDate)</div>
+                            </div>
+
+                            <button type="submit" class="btn btn-success mt-3 btn-block">Save</button>
+                           // <a href="@Url.Action("AssignTicketsList", "AssignTickets")" class="btn btn-danger mt-3 btn-block">Cancel</a>
+                            <a href="@Url.Action("AssignTicketsList", "AssignTickets", new { Status = "Open" })" class="btn btn-danger mt-3 btn-block">Cancel</a>
+                        }
+                        <div id="errorMessage" class="text-danger mt-3"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    @section Scripts {
+        <partial name="_ValidationScriptsPartial" />
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script>
+            $(document).ready(function () {
+                function toggleRemarks() {
+                    var selectedStatus = $('#statusDropdown').val();
+                    if (selectedStatus === 'Hold') {
+                        $('#holdRemarkGroup').show();
+                        $('#closedRemarkGroup').hide();
+                        $('#HoldDateGroup').show();
+                    } else if (selectedStatus === 'Closed') {
+                        $('#closedRemarkGroup').show();
+                        $('#holdRemarkGroup').hide();
+                        $('#HoldDateGroup').hide();
+                    } else {
+                        $('#holdRemarkGroup').hide();
+                        $('#closedRemarkGroup').hide();
+                        $('#HoldDateGroup').hide();
+                    }
+                }
+
+                // Initial call to set the correct visibility on page load
+                toggleRemarks();
+
+                // Bind the change event to the dropdown
+                $('#statusDropdown').change(function () {
+                    toggleRemarks();
+                });
+            });
+        </script>
+
+        <script>
+        window.onload = function () {
+            var today = new Date().toISOString().split('T')[0];
+            document.getElementById("HoldDate").setAttribute("min", today);
+        };
+        </script>
+
+        <script>
+            document.getElementById('TicketDescription').addEventListener('input', function () {
+                let words = this.value.trim().split(/\s+/);
+                if (words.length > 15) {
+                    this.value = words.slice(0, 15).join(" ");
+                    alert("Only 15 words are allowed.");
+                }
+            });
+
+            document.getElementById('ClosedRemark').addEventListener('input', function () {
+                let words = this.value.trim().split(/\s+/);
+                if (words.length > 15) {
+                    this.value = words.slice(0, 15).join(" ");
+                    alert("Only 15 words are allowed.");
+                }
+            });
+        </script>
+ 
+    }
+
+   
+</body>
+</html>

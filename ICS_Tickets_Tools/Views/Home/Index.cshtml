@@ -1,0 +1,248 @@
+﻿@model ICS_Tickets_Tools.ViewModels.DashboardViewModel
+
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="~/lib/datatables/css/jquery.dataTables.css" rel="stylesheet" />
+
+
+<style>
+    /* Optional fixed size for the canvas */
+    #priorityChart {
+        width: 50% !important;
+        height: 287px !important; /* Adjust height as needed */
+        margin-left: -26px !important; /* Adjust height as needed */
+    }
+
+    #statusChart {
+        width: 81% !important;
+        height: 287px !important;
+        margin-left: 50px !important;
+    }
+
+    #categoryChart {
+        width: 81% !important;
+        height: 287px !important;
+        margin-left: 50px !important;
+    }
+
+    /* Optional: card body padding adjustments for spacing */
+    .card-body {
+        padding: 1rem;
+        justify-items: anchor-center;
+    }
+
+    /* Optional: Make sure card is always centered on smaller screens */
+</style>
+
+
+<div class="custom-control">
+    @if (User.IsInRole("Admin"))
+    {
+        <form asp-action="Index" method="get">
+            <div class="form-group">
+                <label asp-for="AssignedTo" class="control-label">Engineer Wise Dashboard</label>
+                <select asp-for="AssignedTo" asp-items="ViewBag.AssignedTos" class="form-control" onchange="this.form.submit()">
+                    <option value="">-- Select Engineer --</option>
+                </select>
+            </div>
+        </form>
+    }
+    <h2 class="text-center font-weight-bold mb-3">Helpdesk Ticket Dashboard</h2>
+
+    <div class="row">
+
+        <div class="col-md-2 mb-2">
+            <div class="card shadow" style="background: linear-gradient(135deg, #d9e4f5, #e2f0cb); color: #333;">
+                <div class="card-body">
+                    <h5>All Tickets</h5>                  
+                    <a asp-controller="Tickets" asp-action="TicketsIndex">
+                        <h5 class="fw-bold" style="color: black;font-size: x-large;">@Model.TotalTickets</h5>
+                    </a>
+                    <canvas id="chart1" height="40"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-2 mb-2">
+            <div class="card shadow" style="background: linear-gradient(135deg, #ffe9d6, #d9e4f5); color: #333;">
+                <div class="card-body">
+                    <h5>Today Tickets</h5>
+                    <a asp-controller="Tickets" asp-action="TicketsIndex">
+                        <h5 class="fw-bold" style="color: black;font-size: x-large;">@Model.TicketsToday</h5>
+                    </a>
+                    <canvas id="chart2" height="40"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-2 mb-2">
+            <div class="card shadow" style="background: linear-gradient(135deg, #ffe9d6, #e2f7d2); color: #333;">
+                <div class="card-body">
+                    <h5>Open Tickets</h5>                  
+                    <a href="@Url.Action("AssignTicketsList", "AssignTickets", new { Status = "Open" })">
+                        <h5 class="fw-bold" style="color: black;font-size: x-large;">@Model.OpenTickets</h5>
+                    </a>
+                    <canvas id="chart3" height="40"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2 mb-2">
+            <div class="card shadow" style="background: linear-gradient(135deg, #ffe0cc, #fff4cc); color: black;">
+                <div class="card-body">
+                    <h5>Hold Tickets</h5>                  
+                    <a href="@Url.Action("AssignTicketsList", "AssignTickets", new { Status = "Open" })">
+                        <h5 class="fw-bold" style="color: black;font-size: x-large;">@Model.OnHoldTickets</h5>
+                    </a>
+                    <canvas id="chart4" height="40"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2 mb-2">
+            <div class="card shadow" style="background: linear-gradient(135deg, #ffd6d6, #e0f7ff); color: black;">
+                <div class="card-body">
+                    <h5>Closed Tickets</h5>                    
+                    <a href="@Url.Action("AssignTicketsList", "AssignTickets", new { Status = "Closed" })">
+                        <h5 class="fw-bold" style="color: black;font-size: x-large;">@Model.ClosedTickets</h5>
+                    </a>
+                    <canvas id="chart5" height="40"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2 mb-2">
+            <div class="card shadow" style="background: linear-gradient(135deg, #d6f0ff, #e0f7ff); color: black;">
+                <div class="card-body">
+                    <h5>Unassigned Tickets</h5>
+                    <a asp-controller="Tickets" asp-action="TicketsIndex">
+                        <h5 class="fw-bold" style="color: black;font-size: x-large;">@Model.UnassignedTickets</h5>
+                    </a>
+                    <canvas id="chart6" height="40"></canvas>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white" style="text-align: center;">
+                    Tickets by Priority
+                </div>
+                <div class="card-body">
+                    <canvas id="priorityChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white" style="text-align: center;">
+                    Tickets by Status
+                </div>
+                <div class="card-body">
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white" style="text-align: center;">
+                    Tickets by Category-wise
+                </div>
+                <div class="card-body">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const priorityChart = new Chart(document.getElementById('priorityChart'), {
+            type: 'doughnut',
+            data: {
+                labels: @Html.Raw(Json.Serialize(Model.UnresolvedByPriority.Keys)),
+                datasets: [{
+                    data: @Html.Raw(Json.Serialize(Model.UnresolvedByPriority.Values)),
+                    backgroundColor: ['#A8DADC', '#F4A261', '#E9C46A', '#B5E48C']
+                }]
+            }
+        });
+
+        const statusChart = new Chart(document.getElementById('statusChart'), {
+            type: 'bar',
+            data: {
+                labels: @Html.Raw(Json.Serialize(Model.UnresolvedByStatus.Keys)),
+                datasets: [{
+                    label: 'Tickets',
+                    data: @Html.Raw(Json.Serialize(Model.UnresolvedByStatus.Values)),
+                    backgroundColor: ['#A8DADC', '#F4A261', '#E9C46A', '#B5E48C']
+                }]
+            }
+        });
+
+        const categoryChart = new Chart(document.getElementById('categoryChart'), {
+            type: 'bar',
+            data: {
+                labels: @Html.Raw(Json.Serialize(Model.CategoryWiseTickets.Keys)),
+                datasets: [{
+                    label: 'Tickets',
+                    data: @Html.Raw(Json.Serialize(Model.CategoryWiseTickets.Values)),
+                    backgroundColor: ['#AEDFF7', '#FDCBCA', '#D3C4F3'] // Customize per category
+
+                }]
+            }
+        });
+    </script>
+
+    <script>
+        function createMiniChart(canvasId, dataColor) {
+            new Chart(document.getElementById(canvasId), {
+                type: 'line',
+                data: {
+                    labels: [1, 2, 3, 4, 5, 6],
+                    datasets: [{
+                        data: Array.from({ length: 6 }, () => Math.floor(Math.random() * 10) + 1),
+                        borderColor: dataColor,
+                        backgroundColor: 'transparent',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: false,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { display: false },
+                        y: { display: false }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    elements: {
+                        point: { radius: 0 }
+                    }
+                }
+            });
+        }
+
+        createMiniChart('chart1', 'white');
+        createMiniChart('chart2', 'white');
+        createMiniChart('chart3', 'white');
+        createMiniChart('chart4', 'white');
+        createMiniChart('chart5', 'white');
+        createMiniChart('chart6', 'white');
+
+    </script>
+
+}
+
+
