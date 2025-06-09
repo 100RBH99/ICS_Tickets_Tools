@@ -32,6 +32,16 @@
     var ActionName = this.ViewContext.RouteData.Values["action"].ToString();
 }
 
+@if (ViewBag.StatusType == "AllTickets")
+{
+    <h2 style="text-align: center;">All Tickets List</h2>
+}
+
+@if (ViewBag.StatusType == "TodayTickets")
+{
+    <h2 style="text-align: center;">All ToDay Tickets</h2>
+}
+
 <div id="ErQuotationDetails" style="width:1000px;"></div>
 
 
@@ -165,7 +175,10 @@
                     }
                 }
                 <th>Status</th>
-                <th>Actions</th>
+                @if (ViewBag.StatusType != "AllTickets" && ViewBag.StatusType != "TodayTickets")
+                {
+                    <th>Actions</th>
+                }
             </tr>
         </thead>
         <tbody>
@@ -242,25 +255,26 @@
                     <td class="btn-group-sm" style="color: @(user.Status == "Closed" ? "red" : user.Status == "Hold" ? "deeppink" : "green")">
                         @user.Status
                     </td>
-
-                    <td>
-                        @if (User.IsInRole("User"))
-                        {
-                            @if (string.IsNullOrEmpty(user.AssignedTo))
+                    @if (ViewBag.StatusType != "AllTickets" && ViewBag.StatusType != "TodayTickets")
+                    {
+                        <td>
+                            @if (User.IsInRole("User"))
                             {
-                                <a asp-action="Edit" asp-route-id="@user.Id" class="btn btn-primary">Edit</a>
+                                @if (string.IsNullOrEmpty(user.AssignedTo))
+                                {
+                                    <a asp-action="Edit" asp-route-id="@user.Id" class="btn btn-primary">Edit</a>
+                                }
+                                else
+                                {
+                                    <span class="btn btn-primay" style="color: darkorange;">Assigned</span>
+                                }
                             }
-                            else
+                            @if (User.IsInRole("Admin"))
                             {
-                                <span class="btn btn-primay" style="color: darkorange;">Assigned</span>
+                                <a asp-action="AssignTicket" asp-route-id="@user.Id" class="btn btn-warning">Assign Ticket</a>
                             }
-                        }
-                        @if (User.IsInRole("Admin"))
-                        {
-                            <a asp-action="AssignTicket" asp-route-id="@user.Id" class="btn btn-warning">Assign Ticket</a>
-                        }
-                    </td>
-
+                        </td>
+                    }
                 </tr>
             }
         </tbody>

@@ -65,7 +65,7 @@ namespace ICS_Tickets_Tools.Repositories
 
 		public async Task<(SignInResult, string)> LoginAsync(LoginViewModel model)
 		{
-			var result = await _signInManager.PasswordSignInAsync(model.EmployeeName, model.Password, false, false);
+			var result = await _signInManager.PasswordSignInAsync(model.EmployeeName, model.Password,model.RememberMe , true);
             if (result.Succeeded)
             {
                 var user = await _userManager.FindByNameAsync(model.EmployeeName);

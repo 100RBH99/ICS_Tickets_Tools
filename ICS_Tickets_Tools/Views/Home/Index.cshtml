@@ -29,6 +29,10 @@
         margin-left: 50px !important;
     }
 
+    /* #chart1 {
+        width: 273px !important;
+    } */
+
     /* Optional: card body padding adjustments for spacing */
     .card-body {
         padding: 1rem;
@@ -37,7 +41,6 @@
 
     /* Optional: Make sure card is always centered on smaller screens */
 </style>
-
 
 <div class="custom-control">
     @if (User.IsInRole("Admin"))
@@ -51,7 +54,7 @@
             </div>
         </form>
     }
-    <h2 class="text-center font-weight-bold mb-3">Helpdesk Ticket Dashboard</h2>
+    <h2 class="text-center font-weight-bold mb-3">Ticket's Dashboard</h2>
 
     <div class="row">
 
@@ -59,10 +62,10 @@
             <div class="card shadow" style="background: linear-gradient(135deg, #d9e4f5, #e2f0cb); color: #333;">
                 <div class="card-body">
                     <h5>All Tickets</h5>                  
-                    <a asp-controller="Tickets" asp-action="TicketsIndex">
+                    <a asp-controller="Home" asp-action="allCountingShow" asp-route-Status="AllTickets">
                         <h5 class="fw-bold" style="color: black;font-size: x-large;">@Model.TotalTickets</h5>
                     </a>
-                    <canvas id="chart1" height="40"></canvas>
+                    <canvas id="chart1" height="40" style="width: 250px !important"></canvas>
                 </div>
             </div>
         </div>
@@ -71,10 +74,10 @@
             <div class="card shadow" style="background: linear-gradient(135deg, #ffe9d6, #d9e4f5); color: #333;">
                 <div class="card-body">
                     <h5>Today Tickets</h5>
-                    <a asp-controller="Tickets" asp-action="TicketsIndex">
+                    <a asp-controller="Home" asp-action="allCountingShow" asp-route-Status="TodayTickets">
                         <h5 class="fw-bold" style="color: black;font-size: x-large;">@Model.TicketsToday</h5>
                     </a>
-                    <canvas id="chart2" height="40"></canvas>
+                    <canvas id="chart2" height="40" style="width: 250px !important"></canvas>
                 </div>
             </div>
         </div>
@@ -83,10 +86,10 @@
             <div class="card shadow" style="background: linear-gradient(135deg, #ffe9d6, #e2f7d2); color: #333;">
                 <div class="card-body">
                     <h5>Open Tickets</h5>                  
-                    <a href="@Url.Action("AssignTicketsList", "AssignTickets", new { Status = "Open" })">
+                    <a href="@Url.Action("allCountingShow", "Home", new { Status = "OpenTickets" })">
                         <h5 class="fw-bold" style="color: black;font-size: x-large;">@Model.OpenTickets</h5>
                     </a>
-                    <canvas id="chart3" height="40"></canvas>
+                    <canvas id="chart3" height="40" style="width: 250px !important"></canvas>
                 </div>
             </div>
         </div>
@@ -94,10 +97,10 @@
             <div class="card shadow" style="background: linear-gradient(135deg, #ffe0cc, #fff4cc); color: black;">
                 <div class="card-body">
                     <h5>Hold Tickets</h5>                  
-                    <a href="@Url.Action("AssignTicketsList", "AssignTickets", new { Status = "Open" })">
+                    <a href="@Url.Action("allCountingShow", "Home", new { Status = "Open" })">
                         <h5 class="fw-bold" style="color: black;font-size: x-large;">@Model.OnHoldTickets</h5>
                     </a>
-                    <canvas id="chart4" height="40"></canvas>
+                    <canvas id="chart4" height="40" style="width: 250px !important"></canvas>
                 </div>
             </div>
         </div>
@@ -108,7 +111,7 @@
                     <a href="@Url.Action("AssignTicketsList", "AssignTickets", new { Status = "Closed" })">
                         <h5 class="fw-bold" style="color: black;font-size: x-large;">@Model.ClosedTickets</h5>
                     </a>
-                    <canvas id="chart5" height="40"></canvas>
+                    <canvas id="chart5" height="40" style="width: 250px !important"></canvas>
                 </div>
             </div>
         </div>
@@ -119,7 +122,7 @@
                     <a asp-controller="Tickets" asp-action="TicketsIndex">
                         <h5 class="fw-bold" style="color: black;font-size: x-large;">@Model.UnassignedTickets</h5>
                     </a>
-                    <canvas id="chart6" height="40"></canvas>
+                    <canvas id="chart6" height="40" style="width: 250px !important"></canvas>
                 </div>
             </div>
         </div>

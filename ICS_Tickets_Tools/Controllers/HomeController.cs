@@ -110,6 +110,120 @@ namespace ICS_Tickets_Tools.Controllers
 
             return View(model);
         }
+        public async Task<IActionResult> allCountingShow(string Status)
+        {
+            var role = _userService.AdminAuth();
+            var userId = _userService.UserName();
+            var today = DateTime.Today;
+
+            IQueryable<Tickets> query = from t in _context.Tickets_Tbl
+                                        join c in _context.Category_Tbl on t.CategoryId equals c.CategoryId into categoryGroup
+                                        from c in categoryGroup.DefaultIfEmpty()
+                                        join sc in _context.SubCategory_Tbl on t.SubCategoryId equals sc.SubCategoryId into subCategoryGroup
+                                        from sc in subCategoryGroup.DefaultIfEmpty()
+                                        select new Tickets
+                                        {
+                                            Id = t.Id,
+                                            TicketNo = t.TicketNo,
+                                            EmpName = t.EmpName,
+                                            TicketDescription = t.TicketDescription,
+                                            CategoryName = c != null ? c.CategoryName : "No Category",
+                                            SubCategoryName = sc != null ? sc.SubCategoryName : "No SubCategory",
+                                            Status = t.Status,
+                                            Image = t.Image,
+                                            CreatedDate = t.CreatedDate,
+                                            UpdatedDate = t.UpdatedDate,
+                                            AssignedTo = t.AssignedTo ?? "N/A",
+                                            AssignedBy = t.AssignedBy ?? "N/A",
+                                            HoldDate = t.HoldDate,
+                                            HoldRemark = t.HoldRemark,
+                                            CloseingDate = t.CloseingDate,
+                                            AssignedRemark = t.AssignedRemark ?? "N/A",
+                                            AssignedDate = t.AssignedDate,
+                                            ClosedRemark = t.ClosedRemark,
+                                            Priority = t.Priority ?? "N/A",
+                                            ClosedBy = t.ClosedBy
+                                        };
+
+            // Filter based on status
+            if(role == "Admin")
+            {
+                if (Status == "AllTickets")
+                {
+                    ViewBag.StatusType = Status;
+                    return View("~/Views/Tickets/TicketsIndex.cshtml", await query.ToListAsync());
+                }
+                if (Status == "TodayTickets")
+                {
+                    query = query.Where(t => t.CreatedDate != null && t.CreatedDate.Date == today);
+                    ViewBag.StatusType = Status;
+                    return View("~/Views/Tickets/TicketsIndex.cshtml", await query.ToListAsync());
+                }
+                if (Status == "Open")
+                {
+                    query = query.Where(t => t.Status == "Hold");
+                    ViewBag.StatusType = Status;
+                    ViewBag.StatusType2 = "HoldTickets";
+                    return View("~/Views/AssignTickets/AssignTicketsList.cshtml", await query.ToListAsync());
+                }
+                query = query.Where(t => t.Status == "Open");
+                ViewBag.StatusType = "Open";
+                ViewBag.StatusType2 = Status;
+                return View("~/Views/AssignTickets/AssignTicketsList.cshtml", await query.ToListAsync());
+            }
+            else if (role == "ITEngineer")
+            {
+                if (Status == "AllTickets")
+                {
+                    query = query.Where(t => t.AssignedTo == userId);
+                    ViewBag.StatusType = Status;
+                    return View("~/Views/Tickets/TicketsIndex.cshtml", await query.ToListAsync());
+                }
+                if (Status == "TodayTickets")
+                {
+                    query = query.Where(t => t.CreatedDate != null && t.CreatedDate.Date == today && t.AssignedTo == userId);
+                    ViewBag.StatusType = Status;
+                    return View("~/Views/Tickets/TicketsIndex.cshtml", await query.ToListAsync());
+                }
+                if (Status == "Open")
+                {
+                    query = query.Where(t => t.Status == "Hold" && t.AssignedTo == userId);
+                    ViewBag.StatusType = Status;
+                    ViewBag.StatusType2 = "HoldTickets";
+                    return View("~/Views/AssignTickets/AssignTicketsList.cshtml", await query.ToListAsync());
+                }
+                query = query.Where(t => t.Status == "Open" && t.AssignedTo == userId);
+                ViewBag.StatusType = "Open";
+                ViewBag.StatusType2 = Status;
+                return View("~/Views/AssignTickets/AssignTicketsList.cshtml", await query.ToListAsync());
+            }
+            else
+            {
+                if (Status == "AllTickets")
+                {
+                    query = query.Where(t => t.EmpName == userId);
+                    ViewBag.StatusType = Status;
+                    return View("~/Views/Tickets/TicketsIndex.cshtml", await query.ToListAsync());
+                }
+                if (Status == "TodayTickets")
+                {
+                    query = query.Where(t => t.CreatedDate != null && t.CreatedDate.Date == today && t.EmpName == userId);
+                    ViewBag.StatusType = Status;
+                    return View("~/Views/Tickets/TicketsIndex.cshtml", await query.ToListAsync());
+                }
+                if (Status == "Open")
+                {
+                    query = query.Where(t => t.Status == "Hold" && t.EmpName == userId);
+                    ViewBag.StatusType = Status;
+                    ViewBag.StatusType2 = "HoldTickets";
+                    return View("~/Views/AssignTickets/AssignTicketsList.cshtml", await query.ToListAsync());
+                }
+                query = query.Where(t => t.Status == "Open" && t.EmpName == userId);
+                ViewBag.StatusType = "Open";
+                ViewBag.StatusType2 = Status;
+                return View("~/Views/AssignTickets/AssignTicketsList.cshtml", await query.ToListAsync());
+            }            
+        }
 
         public IActionResult Privacy()
         {

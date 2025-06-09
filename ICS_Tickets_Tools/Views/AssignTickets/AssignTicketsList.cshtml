@@ -31,7 +31,6 @@
 @if (ViewBag.StatusType == "Open")
 {
     <h2 style="text-align: center;">Show Assign List</h2>
-
 }
 else
 {
@@ -72,10 +71,12 @@ else
                         <th>Hold Remark</th>
                     }
                     <th>Status</th>
-
-                    @if (User.IsInRole("Admin") || User.IsInRole("ITEngineer"))
+                    @if (ViewBag.StatusType2 != "OpenTickets" && ViewBag.StatusType2 != "HoldTickets")
                     {
-                        <th>Actions</th>
+                        @if (User.IsInRole("Admin") || User.IsInRole("ITEngineer"))
+                        {
+                            <th>Actions</th>
+                        }
                     }
                 }
                 else
@@ -156,7 +157,7 @@ else
                         <td>@user.AssignedTo</td>
                         <td>@user.CreatedDate</td>
                         <td>@(user.UpdatedDate.HasValue ? user.UpdatedDate.Value.ToString("yyyy-MM-dd HH:mm:ss") : "No UpdateDate")</td>
-                        <td>@user.AssignedDate</td>
+                        <td>@(user.AssignedDate.HasValue ? user.AssignedDate.Value.ToString("yyyy-MM-dd HH:mm:ss") : "N/A")</td>
                         <td style="white-space: normal; word-wrap: break-word; max-width: 300px;">
                             @Html.Raw(user.AssignedRemark?.Replace(Environment.NewLine, "<br />"))
                         </td>
@@ -174,12 +175,14 @@ else
                         }
 
                         <td class="btn-group-sm" style="color: @(user.Status == "Closed" ? "red" : user.Status == "Hold" ? "deeppink" : "green")"> @user.Status  </td>
-
-                        @if (User.IsInRole("Admin") || User.IsInRole("ITEngineer"))
+                        @if (ViewBag.StatusType2 != "OpenTickets" && ViewBag.StatusType2 != "HoldTickets")
                         {
-                            <td>
-                                <a asp-action="AssignTicket" asp-route-id="@user.Id" class="btn btn-danger">Closed Ticket</a>
-                            </td>
+                            @if (User.IsInRole("Admin") || User.IsInRole("ITEngineer"))
+                            {
+                                <td>
+                                    <a asp-action="AssignTicket" asp-route-id="@user.Id" class="btn btn-danger">Closed Ticket</a>
+                                </td>
+                            }
                         }
                     }
                     else

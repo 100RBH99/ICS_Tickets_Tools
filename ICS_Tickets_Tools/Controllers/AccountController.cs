@@ -84,19 +84,18 @@ namespace ICS_Tickets_Tools.Controllers
         public async Task<IActionResult> Login(LoginViewModel model, string returnUrl)     
         {
 			try
-            {
-                var token = Request.Form["g-recaptcha-response"];
-                var isCaptchaValid = await _captchaService.VerifyToken(token); // _captchaService must be injected via DI
-
-                if (!isCaptchaValid)
-                {
-                    ModelState.AddModelError("", "reCAPTCHA validation failed. Please try again.");
-                    return View(model);
-                }
-
+            {                
                 if (ModelState.IsValid)
                 {
-					var (result, role) = await _accountRepo.LoginAsync(model);
+                    var isCaptchaValid = await _captchaService.VerifyToken(model.RecaptchaToken);
+
+                    if (!isCaptchaValid)
+                    {
+                        ModelState.AddModelError("", "reCAPTCHA validation failed. Please try again.");
+                        return View(model);
+                    }
+
+                    var (result, role) = await _accountRepo.LoginAsync(model);
 					if (result.Succeeded)
                     {
 						if (!string.IsNullOrEmpty(returnUrl))

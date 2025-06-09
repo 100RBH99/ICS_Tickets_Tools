@@ -50,6 +50,7 @@ namespace ICS_Tickets_Tools
 
             services.AddControllersWithViews();
             services.AddSignalR(); // Register SignalR
+            services.AddMemoryCache();
 
             services.AddIdentity<ApplicationUser, IdentityRole>()
               .AddEntityFrameworkStores<TicketsDBContext>()

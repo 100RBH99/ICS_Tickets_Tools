@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -28,24 +29,32 @@ namespace ICS_Tickets_Tools.Services
 
         public async Task<bool> VerifyToken(string token)
         {
-            var secretKey = _configuration["RecaptchaSettings:SecretKey"];
-            var url = $"https://www.google.com/recaptcha/api/siteverify?secret={secretKey}&response={token}";
+            try
+            {
+                var secretKey = _configuration["RecaptchaSettings:SecretKey"];
+                var url = $"https://www.google.com/recaptcha/api/siteverify?secret={secretKey}&response={token}";
 
-            var client = _httpClientFactory.CreateClient();
-            var response = await client.GetStringAsync(url);
-            var captchaResponse = JsonSerializer.Deserialize<GoogleReCaptchaResponse>(response);
+                var client = _httpClientFactory.CreateClient();
+                var response = await client.PostAsync(url, null);
+                var responseContent = await response.Content.ReadAsStringAsync();
 
-            return captchaResponse != null && captchaResponse.success && captchaResponse.score >= 0.5;
+                var captchaResponse = JsonSerializer.Deserialize<GoogleReCaptchaResponse>(responseContent);
+
+                return captchaResponse != null && captchaResponse.success;
+            }
+            catch (Exception ex)
+            {        
+                return false;
+            }
         }
 
         private class GoogleReCaptchaResponse
         {
             public bool success { get; set; }
-            public float score { get; set; }
-            public string action { get; set; }
             public string challenge_ts { get; set; }
             public string hostname { get; set; }
-        }       
+            public string[] errorCodes { get; set; }
+        }
     }
 }
 
