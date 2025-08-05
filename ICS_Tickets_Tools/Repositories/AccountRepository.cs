@@ -54,9 +54,6 @@ namespace ICS_Tickets_Tools.Repositories
 
 				// Assign selected role to user
 				await _userManager.AddToRoleAsync(user, model.Role);
-
-				// Sign in the user
-				await _signInManager.SignInAsync(user, isPersistent: false);
 			}
 
 			return result;

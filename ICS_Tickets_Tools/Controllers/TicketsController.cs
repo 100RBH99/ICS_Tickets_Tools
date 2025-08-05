@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using DocumentFormat.OpenXml.Bibliography;
 using ICS_Tickets_Tools.DB_Context;
+using ICS_Tickets_Tools.Helpers;
 using ICS_Tickets_Tools.Hubs;
 using ICS_Tickets_Tools.Models;
 using ICS_Tickets_Tools.Repositories;
@@ -30,14 +32,18 @@ namespace ICS_Tickets_Tools.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IHubContext<TicketsHub> _hubContext;
+        private readonly LocationService _locationService;
 
-        public TicketsController(ITicketsRepository repository , IUserService userService, UserManager<ApplicationUser> userManager , RoleManager<IdentityRole> roleManager , IHubContext<TicketsHub> hubContext)
+
+        public TicketsController(ITicketsRepository repository , IUserService userService, UserManager<ApplicationUser> userManager , 
+            RoleManager<IdentityRole> roleManager , IHubContext<TicketsHub> hubContext, LocationService locationService)
         {
             _repository = repository;
             _userService = userService;
             _userManager = userManager;
             _roleManager = roleManager;
             _hubContext = hubContext;
+            _locationService = locationService;
         }
 
         public async Task<IActionResult> TicketsIndex(string year)
@@ -73,6 +79,11 @@ namespace ICS_Tickets_Tools.Controllers
             {
                 tickets.Status = "Open";
                 tickets.CreatedDate = DateTime.Now.Date;
+
+                var publicIp = await _locationService.GetClientPublicIpAsync();
+                var location = await _locationService.GetLocationAsync(publicIp);
+                tickets.Location = location;
+                
 
                 var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "TicketIssueImage");
                 if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
@@ -313,7 +324,7 @@ namespace ICS_Tickets_Tools.Controllers
                     return PartialView("TicketsIndex", data);
                 }
 
-                // return PartialView("SalesRecord", data);
+                // return PartialView("SalesRecord", data); ///sourabh dubey
             }
             catch (Exception ex)
             {

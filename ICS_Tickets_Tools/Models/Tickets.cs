@@ -73,6 +73,8 @@ namespace ICS_Tickets_Tools.Models
         [Column("FinancialYear", TypeName = "nvarchar(255)")]   
         public string FinancialYear { get; set; }
 
+        public string Location { get; set; }
+
 
     }
 }

@@ -16,6 +16,7 @@ using Microsoft.Extensions.Hosting;
 using ICS_Tickets_Tools.Services;
 using ICS_Tickets_Tools.Models;
 using ICS_Tickets_Tools.Hubs;
+using Microsoft.AspNetCore.HttpOverrides;
 
 namespace ICS_Tickets_Tools
 {
@@ -39,6 +40,7 @@ namespace ICS_Tickets_Tools
             services.AddScoped<IUserService, UserService>();
             services.AddHttpClient();
             services.AddScoped<GoogleReCaptchaService>();
+            services.AddScoped<LocationService>();
 
             services.AddControllers().AddJsonOptions(option =>
             {
@@ -55,6 +57,7 @@ namespace ICS_Tickets_Tools
             services.AddIdentity<ApplicationUser, IdentityRole>()
               .AddEntityFrameworkStores<TicketsDBContext>()
               .AddDefaultTokenProviders();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -87,8 +90,14 @@ namespace ICS_Tickets_Tools
 
 
             app.UseHttpsRedirection();
-            app.UseStaticFiles();         
-			app.UseRouting();
+            app.UseStaticFiles();
+            app.UseForwardedHeaders(new ForwardedHeadersOptions
+            {
+                ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto,
+                ForwardLimit = null
+            });
+
+            app.UseRouting();
 			app.UseAuthentication();
 			app.UseAuthorization();
 

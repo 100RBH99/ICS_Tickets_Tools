@@ -152,7 +152,7 @@ namespace ICS_Tickets_Tools.Repositories
 
         public async Task<Tickets> GetById(int id)
         {
-            return _context.Tickets_Tbl.FirstOrDefault(t => t.Id == id);
+            return  _context.Tickets_Tbl.FirstOrDefault(t => t.Id == id);
         }
 
         public async Task Add(Tickets tickets)
@@ -173,7 +173,6 @@ namespace ICS_Tickets_Tools.Repositories
             await _context.SaveChangesAsync();
 
             // await _hubContext.Clients.All.SendAsync("ReceiveTicketUpdate", tickets.TicketNo);
-
         }
       
         public async Task<List<Category>> GetAllCategoriesAsync()

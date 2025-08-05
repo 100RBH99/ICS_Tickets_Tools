@@ -52,7 +52,6 @@ namespace ICS_Tickets_Tools.Controllers
             return View(sortedTickets);
         }
 
-
         public async Task<IActionResult> AssignTicket(int id)
         {
             var ticket = await _repository.GetById(id);
