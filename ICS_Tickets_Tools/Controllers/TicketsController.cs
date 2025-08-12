@@ -22,7 +22,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
  
-namespace ICS_Tickets_Tools.Controllers //vvvvviiojijiirgfgfg
+namespace ICS_Tickets_Tools.Controllers //vvvvvghghhgghiiojijiirgfgfgjvhg
 {
 	[Authorize]
 	public class TicketsController : Controller
