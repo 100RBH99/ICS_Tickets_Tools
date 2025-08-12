@@ -192,7 +192,7 @@ namespace ICS_Tickets_Tools.Repositories
                 .ToListAsync();
         }
 
-        public async Task<string> GenerateTicketNoAsync()
+        public async Task<string> GenerateTicketNoAsync()//tetst
         {
             var lastTicket = await _context.Tickets_Tbl.OrderByDescending(t => t.Id).FirstOrDefaultAsync();
             int number = 1;
