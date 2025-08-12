@@ -22,7 +22,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
  
-namespace ICS_Tickets_Tools.Controllers
+namespace ICS_Tickets_Tools.Controllers //iuiuiuuyiuyiyuiuyiuy
 {
 	[Authorize]
 	public class TicketsController : Controller
@@ -324,7 +324,7 @@ namespace ICS_Tickets_Tools.Controllers
                     return PartialView("TicketsIndex", data);
                 }
 
-                // return PartialView("SalesRecord", data); ///sourabh dubey
+                // return PartialView("SalesRecord", data); 
             }
             catch (Exception ex)
             {
