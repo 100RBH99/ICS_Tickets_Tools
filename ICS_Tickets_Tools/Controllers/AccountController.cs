@@ -13,7 +13,7 @@ using ICS_Tickets_Tools.Repositories;
 
 namespace ICS_Tickets_Tools.Controllers
 {
-    public class AccountController : Controller//rinkuu
+    public class AccountController : Controller//rinkuuuuydd
     {
         private readonly IAccountRepository _accountRepo;
 		private readonly RoleManager<IdentityRole> _roleManager;
