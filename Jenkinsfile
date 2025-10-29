@@ -24,9 +24,9 @@ pipeline {
             steps {
                 bat '''
                 powershell -Command "Import-Module WebAdministration;
-                Stop-WebSite -Name 'ICSTickets';
-                Copy-Item -Path D:\\Deploy\\ICS_Tickets_Tools\\* -Destination 'C:\\inetpub\\wwwroot\\ICSTickets' -Recurse -Force;
-                Start-WebSite -Name 'ICSTickets';"
+                Stop-WebSite -Name 'Tickets_Tools';
+                Copy-Item -Path D:\\Deploy\\ICS_Tickets_Tools\\* -Destination 'C:\\inetpub\\wwwroot\\pub' -Recurse -Force;
+                Start-WebSite -Name 'Tickets_Tools';"
                 '''
             }
         }
