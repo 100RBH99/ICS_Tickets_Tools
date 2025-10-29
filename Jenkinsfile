@@ -16,7 +16,7 @@ pipeline {
 
         stage('Publish') {
             steps {
-                bat 'dotnet publish ICS_Tickets_Tools.sln -c Release -o D:\\Deploy\\ICS_Tickets_Tools'
+                bat 'dotnet publish .\\ICS_Tickets_Tools\\ICS_Tickets_Tools.csproj -c Release -o D:\\Deploy\\ICS_Tickets_Tools'
             }
         }
 
