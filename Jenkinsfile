@@ -16,18 +16,20 @@ pipeline {
 
         stage('Publish') {
             steps {
-                bat 'dotnet publish ICS_Tickets_Tools.sln -c Release -o D:\\Deploy\\ICS_Tickets_Tools'
+                bat 'dotnet publish ".\\ICS_Tickets_Tools\\ICS_Tickets_Tools.csproj" -c Release -o "D:\\Deploy\\ICS_Tickets_Tools"'
             }
         }
 
         stage('Deploy to IIS') {
             steps {
                 bat '''
-                powershell -Command "Import-Module WebAdministration;
+                powershell -ExecutionPolicy Bypass -Command "
+                Import-Module WebAdministration;
                 Stop-WebSite -Name 'Tickets_Tools';
-                Copy-Item -Path D:\\Deploy\\ICS_Tickets_Tools\\* -Destination 'C:\\inetpub\\wwwroot\\pub' -Recurse -Force;
-                Start-WebSite -Name 'Tickets_Tools';"
-                '''
+                Restart-WebAppPool -Name 'Tickets_Tools';
+                Copy-Item -Path 'D:\\Deploy\\ICS_Tickets_Tools\\*' -Destination 'C:\\inetpub\\wwwroot\\pub' -Recurse -Force;
+                Start-WebSite -Name 'Tickets_Tools';
+                "'''
             }
         }
     }
