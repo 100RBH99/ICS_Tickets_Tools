@@ -26,6 +26,7 @@ pipeline {
                 powershell -ExecutionPolicy Bypass -Command "
                 Import-Module WebAdministration;
                 Stop-WebSite -Name 'Tickets_Tools';
+                Restart-WebAppPool -Name 'Tickets_Tools';
                 Copy-Item -Path 'D:\\Deploy\\ICS_Tickets_Tools\\*' -Destination 'C:\\inetpub\\wwwroot\\pub' -Recurse -Force;
                 Start-WebSite -Name 'Tickets_Tools';
                 "'''
